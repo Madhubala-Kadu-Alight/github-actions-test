@@ -9,12 +9,8 @@ on:
         default: 'warning'
 	type: choice
 	options:
-    - start
-	  - stop
-    - status
-	  - bounce
-	  - query
-
+          - query
+	  
 jobs:
   build:
     runs-on: [self-hosted, Linux, ansible4]
