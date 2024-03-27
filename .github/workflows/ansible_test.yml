@@ -1,37 +1,60 @@
-name: JVM workflow
+ name: JVM workflow
 
-on:
-  workflow dispatch:
-    inputs:
-      action:
-        description: 'action'
-        required: false
-        default: 'warning'
-	      type: choice
-        options:
-          - query
-          - start
-          - stop
-jobs:
-  build:
-    runs-on: [self-hosted, Linux, ansible4]
-    
-    steps:
-      # Checkput the repository
-      - name: Checkout Repository
-	      uses: actions/checkout@v2
-     
-      # Creat SSH key from GitHub secret
-      - name: Create SSH key
-        run: |
-          mkdir -p ${{ github.workspace }}/.ssh/
-          echo "$SSH_PRIVATE_KEY" > ${{ github.workspace }}/.ssh/private.pem
-          chmod 600 ${{ github.workspae }}/.ssh/private.pem
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+ on: 
+   workflow_dispatch:
+     inputs:
+       action:
+         description: 'action'
+         required: false
+         default: 'warning'
+         type: choice
+         options:
+           - start
+           - stop
+           - status
+           - bounce
+           - query
+ jobs:
+   build:
+     runs-on: [self-hosted, Linux, ansible4]
 
-       # Optionally, get the runner's public IP address
+     steps:
+       # Checkout the repository
+       - name: Checkout Repository
+         uses: actions/checkout@v2
+
+       # Create SSH key from GitHub secret
+       - name: Create SSH key
+         run: |
+           mkdir -p ${{ github.workspace }}/.ssh/
+           echo "$SSH_PRIVATE_KEY" > ${{ github.workspace }}/.ssh/private.pem
+           chmod 600 ${{ github.workspace }}/.ssh/private.pem
+         env:
+           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+       # Optionally, get the runner's public IP addresss
        - name: Get Runner IP Address
          run: curl https://ifconfig.me
 
-        # Add the EC2 instance's SSH key to know hosts
+       # Add the EC2 instance's SSH Key to known_hosts
+       - name: Add SSH Key to known_hosts
+         run: |
+           mkdir -p ${{ github.workspace }}/.ssh/
+           ssh-keyscan -H 10.17.118.92 >> ${{ github.workspace }}/.ssh/known_hosts
+
+       # SSH into the EC2 instance
+             # SSH into the EC2 instance and run the commands
+         - name: SSH and Run Commands
+           run: |
+             ssh -tt -o StrictHostKeyChecking=no -i ${{ github.workspace }}/.ssh/private.pem ec2-user@10.17.118.92 "
+               echo 'SSH Success';
+               cd /usr/global/WAS/scripts;  # Change to the correct directory
+               echo 'Changed directory to /usr/global/WAS/scripts';
+               echo 'y' | sudo -u wsphere /usr/global/WAS/scripts/was-oper ${GITHUB_EVENT_INPUT_ACTION} all;
+             "
+           env:
+            GITHUB_EVENT_INPUT_ACTION: ${{ github.event.inputs.action }}
+           if: "${{ github.event.inputs.action != ''}}"
+
+
+ 
