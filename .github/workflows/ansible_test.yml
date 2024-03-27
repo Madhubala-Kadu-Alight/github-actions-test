@@ -7,7 +7,7 @@ on:
         description: 'action'
         required: false
         default: 'warning'
-	type: choice
+	      type: choice
         options:
           - query
           - start
@@ -19,7 +19,7 @@ jobs:
     steps:
       # Checkput the repository
       - name: Checkout Repository
-	uses: actions/checkout@v2
+	      uses: actions/checkout@v2
      
       # Creat SSH key from GitHub secret
       - name: Create SSH key
@@ -35,4 +35,3 @@ jobs:
          run: curl https://ifconfig.me
 
         # Add the EC2 instance's SSH key to know hosts
-       
