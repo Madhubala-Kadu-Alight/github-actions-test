@@ -8,9 +8,10 @@ on:
         required: false
         default: 'warning'
 	type: choice
-	options:
+        options:
           - query
-	  
+          - start
+          - stop
 jobs:
   build:
     runs-on: [self-hosted, Linux, ansible4]
@@ -21,7 +22,7 @@ jobs:
 	uses: actions/checkout@v2
      
       # Creat SSH key from GitHub secret
-      - name: reate SSH key
+      - name: Create SSH key
         run: |
           mkdir -p ${{ github.workspace }}/.ssh/
           echo "$SSH_PRIVATE_KEY" > ${{ github.workspace }}/.ssh/private.pem
