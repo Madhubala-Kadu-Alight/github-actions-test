@@ -1,0 +1,41 @@
+name: JVM workflow
+
+on:
+  workflow dispatch:
+    inputs:
+      action:
+        description: 'action'
+        required: false
+        default: 'warning'
+	type: choice
+	options:
+    - start
+	  - stop
+    - status
+	  - bounce
+	  - query
+
+jobs:
+  build:
+    runs-on: [self-hosted, Linux, ansible4]
+    
+    steps:
+      # Checkput the repository
+      - name: Checkout Repository
+	uses: actions/checkout@v2
+     
+      # Creat SSH key from GitHub secret
+      - name: reate SSH key
+        run: |
+          mkdir -p ${{ github.workspace }}/.ssh/
+          echo "$SSH_PRIVATE_KEY" > ${{ github.workspace }}/.ssh/private.pem
+          chmod 600 ${{ github.workspae }}/.ssh/private.pem
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+       # Optionally, get the runner's public IP address
+       - name: Get Runner IP Address
+         run: curl https://ifconfig.me
+
+        # Add the EC2 instance's SSH key to know hosts
+       
